@@ -87,8 +87,8 @@ alias note='nvim ~/Documents/notes.md'
 alias bd='cd "$OLDPWD"'
 
 # modified commands
-alias cp='cp -i'
-alias mv='mv -i'
+# alias cp='cp -i'
+# alias mv='mv -i'
 alias rm='trash -v'
 alias ls='ls -aFh --color=always' # add colors and file type extensions
 

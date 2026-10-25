@@ -42,6 +42,10 @@ tiling_drag modifier titlebar
 
 # start a terminal
 bindsym $mod+Return exec alacritty
+
+# start zed editor
+bindsym $mod+Shift+z exec ~/.local/bin/zed
+
 # start file explorer
 bindsym $mod+shift+Return exec --no-startup-id thunar
 # kill focused window

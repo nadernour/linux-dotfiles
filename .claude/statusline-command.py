@@ -1,11 +1,17 @@
 #!/usr/bin/env python3
-"""Claude Code status line: model + effort / project:git branch status / 5-hour usage / weekly (7d) usage / context window usage.
+"""Claude Code status line: model + effort / project:git branch status / 5-hour usage / weekly (7d) usage / context window usage / cold prompt cache warning.
 
 Reads the status line JSON from stdin. Does not require jq. Missing fields never
 raise an error: before the first API response the usage segments are shown as
 "--"; once a response has arrived, a usage limit the API does not report (for
 example rate limits for non-subscribers) is hidden instead. Errors are written to
 stderr, never to stdout.
+
+When billed through the API (no rate limits reported), the estimated session cost is
+shown in their place.
+
+Once the prompt cache has gone cold (its TTL passed, or the last response reported no
+cache tokens), a red warning is shown with the tokens the next request will re-cache.
 """
 import json
 import math
@@ -86,6 +92,32 @@ def colored(value, color):
     return "%s%s%s" % (color, value, RESET)
 
 
+def format_tokens(count):
+    """Token count like "850", "45k" or "1.2M"."""
+    thousands = math.floor(count / 1000 + 0.5)
+    if thousands >= 1000:
+        return "%.1fM" % (count / 1e6)
+    if thousands:
+        return "%dk" % thousands
+    return "%d" % count
+
+
+def cache_warning(cache):
+    """Red "cache cold" warning once the prompt cache has expired, or None while it is warm or its state is unknown."""
+    if not isinstance(cache, dict) or cache.get("caching_observed") is not True:
+        return None  # no response yet, or caching is off or not reported: the warning would never clear
+    # Claude Code re-runs the script when expires_at passes, but check the time too in case "warm" is stale
+    expires_at = as_number(cache.get("expires_at"))
+    expired = expires_at is not None and expires_at <= time.time()
+    if cache.get("warm") is not False and not expired:
+        return None
+    text = "%s⚠ cache cold%s" % (RED, RESET)
+    recache = as_number(cache.get("recache_tokens_if_cold"))
+    if recache:
+        text += " %s(re-cache %s)%s" % (MUTED, format_tokens(recache), RESET)
+    return text
+
+
 def git_status(directory):
     """Branch summary like "main* ↑1 ↓2" ("detached@<hash>" on a detached HEAD, "*" when dirty), or None outside a repository."""
     try:
@@ -148,7 +180,7 @@ def project_name(data):
 
 
 def main():
-    sys.stdout.reconfigure(encoding="utf-8")  # the git segment uses non-ASCII arrows regardless of the locale
+    sys.stdout.reconfigure(encoding="utf-8")  # the git and cache segments use non-ASCII symbols regardless of the locale
     try:
         data = json.load(sys.stdin)
     except Exception as exc:
@@ -181,7 +213,14 @@ def main():
 
     parts = [part for part in (head, location) if part]
     parts += limits
+    # no rate limits after the first response means the session is billed through the API, so show its cost instead
+    cost = as_number(get(data, "cost", "total_cost_usd"))
+    if first_response_seen and not get(data, "rate_limits") and cost is not None:
+        parts.append("%scost: $%.2f%s" % (BRIGHT, cost, RESET))
     parts.append(render("ctx", context))
+    warning = cache_warning(get(data, "prompt_cache"))
+    if warning:
+        parts.append(warning)
     sys.stdout.write(sep.join(parts))
 
 

@@ -98,6 +98,13 @@ Its settings and status line script in `~/.claude/` are already restored by the 
   autologin-user=nader
   autologin-user-timeout=0
   ```
+- **Keyboard layouts:** English + Arabic, switched with **Super+Space**. `sudoedit /etc/default/keyboard` and set:
+  ```
+  XKBLAYOUT="us,ara"
+  XKBVARIANT=","
+  XKBOPTIONS="grp:win_space_toggle"
+  ```
+  It takes effect at the next login. To apply it now: `setxkbmap -option '' -option grp:win_space_toggle`.
 
 ### 6. Desktop settings
 These were set through GUIs or are specific to this machine, so they are noted here instead of tracked.

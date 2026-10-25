@@ -2,6 +2,7 @@
   "permissions": {
     "defaultMode": "auto"
   },
+  "model": "opus",
   "statusLine": {
     "type": "command",
     "command": "python3 \"$HOME/.claude/statusline-command.py\"",
@@ -13,6 +14,5 @@
     }
   },
   "theme": "dark",
-  "verbose": false,
-  "model": "opus"
+  "verbose": false
 }
