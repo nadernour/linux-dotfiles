@@ -10,7 +10,7 @@
   },
   "modelSettings": {
     "claude-opus-5-5": {
-      "effortLevel": "xhigh"
+      "effortLevel": "medium"
     }
   },
   "theme": "dark",

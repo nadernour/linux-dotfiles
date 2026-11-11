@@ -70,6 +70,7 @@ xorg-dev
 flameshot
 thunar
 thunar-archive-plugin
+ristretto
 google-chrome-stable
 localsend
 libreoffice
@@ -85,4 +86,4 @@ clang-format
 # Misc
 # ========================================================
 rsync
-ristretto
+gh
