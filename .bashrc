@@ -158,25 +158,6 @@ pkg() {
   esac
 }
 
-# Riyad matn check's long run: start it (unless already running) and follow its log.
-# Ctrl-C only stops following; the run keeps going. `long-run stop` stops the run.
-long-run() {
-  local dir=~/projects/riyad/book_data
-  if [ "$1" = stop ]; then
-    pkill -f '[t]ools/long_run.sh'; pkill -f '[c]laude -p Do one round'
-    echo "Long run stopped."
-    return
-  fi
-  mkdir -p "$dir/.cache"
-  if pgrep -f '[t]ools/long_run.sh' >/dev/null; then
-    echo "Long run is already running; following its log."
-  else
-    (cd "$dir" && setsid nohup tools/long_run.sh >> .cache/long-run.log 2>&1 < /dev/null &)
-    echo "Long run started; following its log (Ctrl-C to stop following)."
-  fi
-  tail -n 20 -F "$dir/.cache/long-run.log"
-}
-
 # Temp aliases/exports/sources
 alias cd-dev='cd /mnt/work/nader_data/development/'
 alias cd-arch='cd /mnt/work/nader_data/archive/personal/'
